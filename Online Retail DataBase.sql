@@ -138,6 +138,7 @@ ON c.CustomerID = o.CustomerID
 GROUP BY c.CustomerID,c.FirstName,c.LastName
 ORDER BY TotalSpending DESC;
 
+
 -- Query 5: Retrieve the most popular product category
 SELECT top 1 c.CategoryID, c.CategoryName, SUM(oi.Quantity) TotalQuantitySold
 FROM OrderItems oi
@@ -192,11 +193,62 @@ JOIN Categories c ON p.CategoryID = c.CategoryID
 GROUP BY c.CategoryID, c.CategoryName
 ORDER BY AvgPrice DESC;
 
+
+
+----- insert customer that never placed order 
+INSERT INTO Customers(FirstName, LastName, Email, Phone, Address, City, State, ZipCode, Country)
+VALUES 
+('Ansh', 'Gupta', 'ansh.gupta@example.com', '1234932090', '123 Elm St.', 'Springfield', 
+'IL', '62701', 'USA');
+
+
 -- Query 11: List customers who have never placed an order 
+SELECT c.CustomerID, c.FirstName, c.LastName, c.Phone, c.Email, o.OrderID, o.TotalAmount
+FROM Customers c
+FULL JOIN Orders o ON c.CustomerID = o.CustomerID
+WHERE o.OrderID IS NULL;
+
+SELECT c.CustomerID, c.FirstName, c.LastName, c.Phone, c.Email, o.OrderID, o.TotalAmount
+FROM Customers c
+LEFT JOIN Orders o ON c.CustomerID = o.CustomerID
+WHERE o.OrderID IS NULL;
+
+
+
 -- Query 12: Retrieve the total quantity sold for each product
+SELECT p.ProductID, p.ProductName, COUNT(oi.Quantity) AS TotalQuantity
+FROM Products p 
+JOIN OrderItems oi ON p.ProductID = oi.ProductID
+GROUP BY p.ProductID, p.ProductName
+ORDER BY TotalQuantity DESC;
+
+
 -- Query 13: Calculate the total revenue generated from each category
+SELECT c.CategoryID, c.CategoryName, SUM(oi.Price * oi.Quantity)  AS TotalRevenue
+FROM Products p 
+JOIN Categories c ON p.CategoryID = c.CategoryID
+JOIN OrderItems oi ON p.ProductID = oi.ProductID
+GROUP BY c.CategoryID, c.CategoryName
+ORDER BY TotalRevenue DESC;
+
+
 -- Query 14: Find the highest-priced product in each category
+SELECT top 1 c.CategoryID, c.CategoryName,p1.ProductID, p1.ProductName ,  p1.Price
+FROM Categories c 
+JOIN Products p1 ON c.CategoryID = p1.CategoryID
+WHERE p1.Price = (SELECT MAX(Price) FROM Products p2 WHERE p2.CategoryID = p1.CategoryID);
+
+
+
 -- Query 15: Retrieve orders with the total amount greater than a specific value ( e.g. 500 RS. )
+SELECT o.OrderID, c.CustomerID, c.FirstName, c.LastName, o.TotalAmount
+FROM Orders o 
+JOIN Customers c ON o.CustomerID = c.CustomerID
+WHERE o.TotalAmount > 500
+ORDER BY o.TotalAmount DESC;
+
+
+
 -- Query 16:
 -- Query 17:
 -- Query 18:
