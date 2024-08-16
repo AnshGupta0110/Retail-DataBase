@@ -138,12 +138,60 @@ ON c.CustomerID = o.CustomerID
 GROUP BY c.CustomerID,c.FirstName,c.LastName
 ORDER BY TotalSpending DESC;
 
--- Query 5: Retrieve the most popular product value
+-- Query 5: Retrieve the most popular product category
+SELECT top 1 c.CategoryID, c.CategoryName, SUM(oi.Quantity) TotalQuantitySold
+FROM OrderItems oi
+JOIN Products p ON oi.ProductID = p.ProductID
+JOIN Categories c ON p.CategoryID = c.CategoryID
+Group by c.CategoryID, c.CategoryName
+Order by TotalQuantitySold DESC;
+
+
+
+------ to insert a product with 0 stock
+INSERT INTO Products(ProductName, CategoryID, Price, Stock)
+VALUES 
+('Keyboard', 1, 39.99, 0);
+
 -- Query 6: List all products that are out of the stock
+SELECT * FROM Products WHERE Stock = 0;
+
+-- most accurate query 
+SELECT ProductID, ProductName, Stock FROM Products WHERE Stock = 0;
+
+
+
 -- Query 7: Find customers who placed orders in the last 30 days
+SELECT c.CustomerID, c.FirstName, c.LastName, c.Phone, c.Email 
+FROM Customers c JOIN Orders o 
+ON c.CustomerID = o.CustomerID
+WHERE o.OrderDate >= DATEADD(DAY, -30, GETDATE()); 
+
 -- Query 8: Calculate the total number of orders placed each month
+SELECT 
+YEAR(OrderDate) as OrderYear,
+MONTH(OrderDate) as OrderMonth,
+COUNT(OrderID) AS TotalOrders
+FROM Orders o
+GROUP BY YEAR(OrderDate), MONTH(OrderDate)
+ORDER BY OrderYear, OrderMonth;
+
+
+
 -- Query 9: Retrieve the details of the most recent order
+SELECT top 1 o.OrderID, o.OrderDate, o.TotalAmount, c.FirstName, c.LastName
+FROM Orders o 
+JOIN Customers c ON o.CustomerID = c.CustomerID
+ORDER BY o.OrderDate DESC;
+
+
 -- Query 10: Find the average price of products in each category
+SELECT  c.CategoryID, c.CategoryName, AVG(p.Price) AS AvgPrice
+FROM Products p 
+JOIN Categories c ON p.CategoryID = c.CategoryID
+GROUP BY c.CategoryID, c.CategoryName
+ORDER BY AvgPrice DESC;
+
 -- Query 11: List customers who have never placed an order 
 -- Query 12: Retrieve the total quantity sold for each product
 -- Query 13: Calculate the total revenue generated from each category
