@@ -233,10 +233,32 @@ ORDER BY TotalRevenue DESC;
 
 
 -- Query 14: Find the highest-priced product in each category
-SELECT top 1 c.CategoryID, c.CategoryName,p1.ProductID, p1.ProductName ,  p1.Price
-FROM Categories c 
+
+
+SELECT 
+    c.CategoryID, c.CategoryName, p.ProductID, p.ProductName, p.Price
+FROM Categories c
+CROSS APPLY 
+    (SELECT TOP 1 
+         ProductID, ProductName, Price 
+     FROM Products p 
+     WHERE p.CategoryID = c.CategoryID 
+     ORDER BY Price DESC) p;
+
+
+------- Highest Priced Product
+SELECT TOP 1 c.CategoryID, c.CategoryName, p1.ProductID, p1.ProductName, p1.Price
+FROM 
+    Categories c
 JOIN Products p1 ON c.CategoryID = p1.CategoryID
-WHERE p1.Price = (SELECT MAX(Price) FROM Products p2 WHERE p2.CategoryID = p1.CategoryID);
+WHERE 
+    p1.Price = (
+        SELECT MAX(p2.Price) 
+        FROM Products p2 
+        WHERE p2.CategoryID = c.CategoryID
+    )
+ORDER BY 
+    p1.Price DESC;
 
 
 
@@ -249,10 +271,152 @@ ORDER BY o.TotalAmount DESC;
 
 
 
--- Query 16:
--- Query 17:
--- Query 18:
--- Query 19:
--- Query 20:
--- Query 21:
 
+---- For order counts
+INSERT INTO Orders(CustomerId, OrderDate, TotalAmount)
+VALUES 
+(4, GETDATE(), 3499.95);
+
+
+INSERT INTO OrderItems(OrderID, ProductID, Quantity, Price)
+VALUES 
+(4, 1, 5, 699.99);
+
+-- Query 16: List product along with the number of orders they appear in
+SELECT p.ProductID, p.ProductName, Count(oi.OrderID) AS OrderCounts
+FROM OrderItems oi
+JOIN Products p ON oi.ProductID = p.ProductID
+GROUP BY p.ProductID,p.ProductName
+ORDER BY OrderCounts DESC;
+
+
+-- Query 17: Find the top 3 most frequently ordered products 
+SELECT TOP 3 p.ProductID, p.ProductName, COUNT(oi.OrderID) AS OrderCounts
+FROM OrderItems oi
+JOIN Products p ON oi.ProductID = p.ProductID
+GROUP BY p.ProductID, p.ProductName
+ORDER BY OrderCounts DESC
+
+
+
+-- Query 18: Calculate the total number of customers from each country
+SELECT Country,  COUNT(CustomerID) AS TotalCustomers
+FROM Customers 
+GROUP BY Country
+ORDER BY TotalCustomers DESC;
+
+
+
+-- Query 19: Rretrieve the list of customers along with their total spending
+SELECT c.CustomerID, c.FirstName, c.LastName, SUM(o.TotalAmount) AS TotalSpending
+FROM Orders o 
+JOIN Customers c ON o.CustomerID = c.CustomerID
+GROUP BY c.CustomerID, c.FirstName, c.LastName
+ORDER BY TotalSpending DESC 
+
+
+
+-- Query 20: List orders with more than a specified nmber of items (e.g. 5 items)
+SELECT o.OrderID, c.CustomerID, c.FirstName, c.LastName, COUNT(oi.OrderItemID) AS NumberOfItems
+FROM Orders o JOIN OrderItems oi ON o.OrderID = oi.OrderID
+JOIN Customers c ON o.CustomerID = c.CustomerID 
+GROUP BY o.OrderID, c.CustomerID, c.FirstName ,c.LastName
+HAVING COUNT(oi.OrderID) > 1
+ORDER BY NumberOfItems DESC;
+
+
+
+---- Create a Log Table
+---- Create Trigger for each Table
+
+
+-- Create a Log Table
+CREATE TABLE ChangeLog(
+    LogID INT PRIMARY KEY IDENTITY(1,1),
+	TableName NVARCHAR(50),
+	Operation NVARCHAR(10),
+	RecordID INT,
+	ChangeDate DATETIME DEFAULT GETDATE(),
+	ChangedBy NVARCHAR(100)
+)
+
+
+
+
+
+-- 1. Trigger for Products Table
+
+
+-- Trigger for INSERT on Products table
+
+CREATE OR ALTER TRIGGER trg_Insert_Product
+ON Products
+AFTER INSERT
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Products', 'INSERT', inserted.ProductID, SYSTEM_USER
+	 FROM inserted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'INSERT operation logged for Products Table.';
+END;
+GO
+
+   -- Try to Insert one record into the Products table
+INSERT INTO Products(ProductName, CategoryID, Price, Stock)
+VALUES ('Wireless Mouse', 1, 4.99, 20);
+
+INSERT INTO Products(ProductName, CategoryID, Price, Stock)
+VALUES ('Spiderman Multiverse Comic', 3, 2.50, 150);
+
+
+SELECT * FROM Products;
+SELECT * FROM  ChangeLog;
+
+
+
+
+-- Trigger for UPDATE on Products table
+CREATE OR ALTER TRIGGER trg_Update_Products
+ON Products
+AFTER UPDATE 
+AS
+BEGIN
+
+    INSERT INTO ChangeLog(TableName, Operation, RecordID, ChangedBY)
+	SELECT 'Products', 'UPDATE', inserted.ProductID, SYSTEM_USER
+	FROM inserted;
+
+	PRINT 'UPDATE operation logged for Products Table.'
+END;
+GO
+
+------- Try to update any record from Products table
+UPDATE Products SET Price = Price - 300 WHERE ProductID = 2;
+
+SELECT * FROM Products;
+SELECT * FROM  ChangeLog;
+
+
+
+
+
+-- Trigger for DELETE on Products table
+
+CREATE OR ALTER TRIGGER trg_Delete_Products
+ON Products
+AFTER DELETE 
+AS
+BEGIN
+
+    INSERT INTO ChangeLog(TableName, Operation, RecordID, ChangedBY)
+	SELECT 'Products', 'DELETE', deleted.ProductID, SYSTEM_USER
+	FROM deleted;
+
+	PRINT 'DELETE operation logged for Products Table.'
+END;
+GO
+------- Try to Delete any record from Products table
+DELETE FROM Products WHERE ProductID = 9;
