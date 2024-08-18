@@ -326,6 +326,12 @@ ORDER BY NumberOfItems DESC;
 
 
 
+/*
+=================================
+Implementing Triggers
+=================================
+*/
+
 ---- Create a Log Table
 ---- Create Trigger for each Table
 
@@ -341,11 +347,7 @@ CREATE TABLE ChangeLog(
 )
 
 
-
-
-
--- 1. Trigger for Products Table
-
+------------------------- 1.Trigger for Products Table -------------------------------
 
 -- Trigger for INSERT on Products table
 
@@ -376,8 +378,6 @@ SELECT * FROM Products;
 SELECT * FROM  ChangeLog;
 
 
-
-
 -- Trigger for UPDATE on Products table
 CREATE OR ALTER TRIGGER trg_Update_Products
 ON Products
@@ -395,12 +395,6 @@ GO
 
 ------- Try to update any record from Products table
 UPDATE Products SET Price = Price - 300 WHERE ProductID = 2;
-
-SELECT * FROM Products;
-SELECT * FROM  ChangeLog;
-
-
-
 
 
 -- Trigger for DELETE on Products table
@@ -420,3 +414,287 @@ END;
 GO
 ------- Try to Delete any record from Products table
 DELETE FROM Products WHERE ProductID = 9;
+
+
+
+-------------------- 2.Trigger for Orders Table ------------------------------
+
+-- Trigger for INSERT on Orders table
+
+CREATE OR ALTER TRIGGER trg_Insert_Orders
+ON Orders
+AFTER INSERT
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Orders', 'INSERT', inserted.OrderID, SYSTEM_USER
+	 FROM inserted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'INSERT operation logged for Orders Table.';
+END;
+GO
+
+-- Trigger for UPDATE on Orders table
+
+CREATE OR ALTER TRIGGER trg_Update_Orders
+ON Orders
+AFTER UPDATE
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Orders', 'UPDATE', inserted.OrderID, SYSTEM_USER
+	 FROM inserted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'UPDATE operation logged for Orders Table.';
+END;
+GO
+
+-- Trigger for DELETE on Orders table
+
+CREATE OR ALTER TRIGGER trg_Delete_Orders
+ON Orders
+AFTER DELETE
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Orders', 'DELETE', deleted.OrderID, SYSTEM_USER
+	 FROM deleted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'DELETE operation logged for Orders Table.';
+END;
+GO
+
+
+
+--- Try to Insert, Update and Delete any record 
+INSERT INTO Orders(CustomerId, OrderDate, TotalAmount)
+VALUES 
+(2, GETDATE(), 71.98);
+
+UPDATE Orders SET OrderDate = SYSDATETIME() WHERE OrderID = 5;
+
+DELETE FROM Orders WHERE OrderID = 5;
+
+SELECT * FROM Orders;
+SELECT * FROM ChangeLog;
+
+
+----------------------------- 3.Trigger for customers Table --------------------------------------
+
+-- Trigger for INSERT on customers table
+
+CREATE OR ALTER TRIGGER trg_Insert_Customers
+ON Customers
+AFTER INSERT
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Customers', 'INSERT', inserted.CustomerID, SYSTEM_USER
+	 FROM inserted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'INSERT operation logged for Orders Table.';
+END;
+GO
+
+-- Trigger for UPDATE on Orders table
+
+CREATE OR ALTER TRIGGER trg_Update_Customers
+ON Customers
+AFTER UPDATE
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Customers', 'UPDATE', inserted.CustomerID, SYSTEM_USER
+	 FROM inserted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'UPDATE operation logged for Orders Table.';
+END;
+GO
+
+-- Trigger for DELETE on Orders table
+
+CREATE OR ALTER TRIGGER trg_Delete_Customers
+ON Customers
+AFTER DELETE
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Customers', 'DELETE', deleted.CustomerID, SYSTEM_USER
+	 FROM deleted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'DELETE operation logged for Orders Table.';
+END;
+GO
+
+
+--- Try to Insert, Update and Delete any record 
+INSERT INTO Customers(FirstName, LastName, Email, Phone, Address, City, State, ZipCode, Country)
+VALUES 
+('Ankit', 'Kumar', 'ankit.kumar@example.com', '12345677890', '123 Elm St.', 'Springfield', 
+'IL', '62701', 'IND');
+
+UPDATE Customers SET Email = 'gupta.ansh@example.com' WHERE CustomerID = 4;
+
+DELETE FROM Customers WHERE CustomerID = 5;
+
+SELECT * FROM Customers;
+SELECT * FROM ChangeLog;
+
+
+
+
+------------------------ 4.Trigger for OrderItems Table ------------------------------------
+
+-- Trigger for INSERT on customers table
+
+CREATE OR ALTER TRIGGER trg_Insert_OrderItems
+ON OrderItems
+AFTER INSERT
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'OrderItems', 'INSERT', inserted.OrderItemID, SYSTEM_USER
+	 FROM inserted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'INSERT operation logged for Orders Table.';
+END;
+GO
+
+-- Trigger for UPDATE on Orders table
+
+CREATE OR ALTER TRIGGER trg_Update_OrderItems
+ON OrderItems
+AFTER UPDATE
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'OrderItems', 'UPDATE', inserted.OrderItemID, SYSTEM_USER
+	 FROM inserted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'UPDATE operation logged for Orders Table.';
+END;
+GO
+
+-- Trigger for DELETE on Orders table
+
+CREATE OR ALTER TRIGGER trg_Delete_OrderItems
+ON OrderItems
+AFTER DELETE
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'OrderItems', 'DELETE', deleted.OrderItemID, SYSTEM_USER
+	 FROM deleted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'DELETE operation logged for Orders Table.';
+END;
+GO
+
+
+--- Try to Insert, Update and Delete any record 
+INSERT INTO OrderItems(OrderID, ProductID, Quantity, Price)
+VALUES 
+(1, 1, 1, 699.99);
+
+UPDATE OrderItems SET Quantity = 4 WHERE OrderItemID = 6;
+UPDATE OrderItems SET Price = Price - 139.998 WHERE OrderItemID = 6;
+
+DELETE FROM OrderItems WHERE OrderItemID = 7;
+
+SELECT * FROM OrderItems;
+SELECT * FROM ChangeLog;
+
+
+------------------------------- 4.Trigger for Categories Table --------------------------------------
+
+-- Trigger for INSERT on Cusomters table
+
+CREATE OR ALTER TRIGGER trg_Insert_Categories
+ON Categories
+AFTER INSERT
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Categories', 'INSERT', inserted.CategoryID, SYSTEM_USER
+	 FROM inserted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'INSERT operation logged for Orders Table.';
+END;
+GO
+
+-- Trigger for UPDATE on Customers table
+
+CREATE OR ALTER TRIGGER trg_Update_Categories
+ON Categories
+AFTER UPDATE
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Categories', 'UPDATE', inserted.CategoryID, SYSTEM_USER
+	 FROM inserted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'UPDATE operation logged for Orders Table.';
+END;
+GO
+
+-- Trigger for DELETE on Customers table
+
+CREATE OR ALTER TRIGGER trg_Delete_Categories
+ON Categories
+AFTER DELETE
+AS
+BEGIN
+----------- Insert a record into the change log table 
+     INSERT INTO ChangeLog (TableName, Operation, RecordID, ChangedBy)
+	 SELECT 'Categories', 'DELETE', deleted.CategoryID, SYSTEM_USER
+	 FROM deleted;
+
+	 -- Display a message indicating that the trigger has fired.
+	 PRINT 'DELETE operation logged for Orders Table.';
+END;
+GO
+
+
+--- Try to Insert, Update and Delete any record 
+INSERT INTO Categories(CategoryName, Description)
+VALUES 
+('vehicles','Electric scooters & motorbikes');
+
+UPDATE Categories SET CategoryName = 'Gaming & Toys' WHERE CategoryID = 4;
+
+DELETE FROM Categories WHERE CategoryID = 4;
+
+SELECT * FROM Categories;
+SELECT * FROM ChangeLog;
+
+
+
+
+
+/*
+=================================
+Implementing Indexes
+=================================
+*/
