@@ -692,9 +692,114 @@ SELECT * FROM ChangeLog;
 
 
 
-
 /*
 =================================
 Implementing Indexes
 =================================
 */
+
+
+
+---------------------------- 1. Indexes on Category Table -----------------------------------
+
+--- Clustered Index on Category Table (CategoryID)
+CREATE CLUSTERED INDEX IDX_Category_CategoryID
+ON Categories(CategoryID);
+GO
+
+
+
+---------------------------- 2. Indexes on Products Table -----------------------------------
+
+-- 1. Remove Foreign Constraint of that Table
+-- 2. Remove Primary Key of Products Table
+-- 3. Create indexes 
+-- 4. Recreate Foreign Contraint of that Table
+
+-- Drop Foregin Key Constraint from OrderItems Table (ProductID)
+ALTER TABLE OrderItems DROP CONSTRAINT FK__OrderItem__Produ__5629CD9C;
+
+-- Create Clustered Indexes
+CREATE CLUSTERED INDEX IDX_Products_ProductID
+ON Products(ProductID);
+GO
+
+-- Non-Clustered Indexe on CategoryID : To Speed up queries Filtering by CategoryID.
+CREATE NONCLUSTERED INDEX IDX_Products_CategoryID
+ON Products(CategoryID);
+GO
+-- Non-Clustered Indexe on Price : To Speed up queries Filtering or Sorting by Price.
+CREATE NONCLUSTERED INDEX IDX_Products_Price 
+ON Products(Price);
+GO
+
+-- Recreate Foregin Key Constraint from OrderItems Table (ProductID)
+ALTER TABLE OrderItems ADD CONSTRAINT FK_OrderItems_Products
+FOREIGN KEY (ProductID) REFERENCES Products(ProductID);
+GO
+
+
+---------------------------- 3. Indexes on Orders Table -----------------------------------
+
+-- Drop Foregin Key Constraint from OrderItems Table (OrderID)
+ALTER TABLE OrderItems DROP CONSTRAINT FK__OrderItem__Order__571DF1D5;
+
+-- Create Clustered Indexes
+CREATE CLUSTERED INDEX IDX_Orders_OrderID
+ON Orders(OrderID);
+GO
+
+-- Non-Clustered Indexe on CustomerID : To Speed up queries Filtering by CustomerID.
+CREATE NONCLUSTERED INDEX IDX_Orders_CustomerID
+ON Orders(CustomerID);
+GO
+-- Non-Clustered Indexe on OrderDate : To Speed up queries Filtering or Sorting by OrderDate.
+CREATE NONCLUSTERED INDEX IDX_Products_OrderDate 
+ON Orders(OrderDate);
+GO
+
+-- Recreate Foregin Key Constraint from OrderItems Table (ProductID)
+ALTER TABLE OrderItems ADD CONSTRAINT FK_OrderItems_Orders
+FOREIGN KEY (OrderID) REFERENCES Orders(OrderID);
+GO
+
+---------------------------- 3. Indexes on OrderItems Table -----------------------------------
+
+-- Create Clustered Indexes
+CREATE CLUSTERED INDEX IDX_OrderItems_OrderItemID
+ON OrderItems(OrderItemID);
+GO
+
+-- Non-Clustered Indexe on OrderID : To Speed up queries Filtering by OrderID.
+CREATE NONCLUSTERED INDEX IDX_OrderItems_OrderID
+ON OrderItems(OrderID);
+GO
+-- Non-Clustered Indexe on ProductID : To Speed up queries Filtering or Sorting by ProductID.
+CREATE NONCLUSTERED INDEX IDX_OrderItems_ProductID 
+ON OrderItems(ProductID);
+GO
+
+
+---------------------------- 4. Indexes on Customers Table -----------------------------------
+
+-- Drop Foregin Key Constraint from Orders Table (CustomerID)
+ALTER TABLE Orders DROP CONSTRAINT FK__Orders__Customer__534D60F1;
+
+-- Create Clustered Indexes
+CREATE CLUSTERED INDEX IDX_Customers_CustomerID
+ON Customers(CustomerID);
+GO
+
+-- Non-Clustered Indexe on Email : To Speed up queries Filtering by Email.
+CREATE NONCLUSTERED INDEX IDX_OrderItems_OrderID
+ON Customers(Email);
+GO
+-- Non-Clustered Indexe on Country : To Speed up queries Filtering or Sorting by Country.
+CREATE NONCLUSTERED INDEX IDX_OrderItems_ProductID 
+ON Customers(Country);
+GO
+
+-- Recreate Foregin Key Constraint from Orders Table (CustomerID)
+ALTER TABLE Orders ADD CONSTRAINT FK_Orders_CustomerID
+FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID);
+GO
