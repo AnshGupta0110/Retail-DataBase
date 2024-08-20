@@ -803,3 +803,74 @@ GO
 ALTER TABLE Orders ADD CONSTRAINT FK_Orders_CustomerID
 FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID);
 GO
+
+/*
+
+====================================================
+Implementing Views
+====================================================
+
+*/
+
+
+-- View for Product details : A view combining product detail with category names
+CREATE VIEW vw_ProductDetails AS
+SELECT p.ProductID, p.ProductName, p.Price, p.Stock, c.CategoryName
+From Products p INNER JOIN Categories c 
+ON p.CategoryID = c.CategoryID;
+GO
+--- Display product details with category names using view
+SELECT * FROM vw_ProductDetails;
+
+
+--IMP
+-- View for Customer Orders : A view to get summarry of orders placed by each customer
+CREATE VIEW vw_CustomerOrders 
+AS
+SELECT c.CustomerID, c.FirstName, c.LastName, COUNT(o.OrderID) AS TotalOrders, SUM(oi.Quantity * oi.Price) AS TotalAmount
+FROM Customers c 
+INNER JOIN Orders o ON c.CustomerID = o.CustomerID
+INNER JOIN OrderItems oi ON o.OrderID = oi.OrderID
+GROUP BY c.CustomerID, c.FirstName, c.LastName;
+GO
+--- Display view vw_CustomerOrders
+SELECT * FROM vw_CustomerOrders;
+
+-- View for Recent Orders   : A view to display orders placed in last 30 days
+CREATE VIEW vw_RecentOrders 
+AS
+SELECT o.OrderID, o.OrderDate, c.CustomerID, c.FirstName, c.LastName,
+SUM(oi.Quantity * oi.Price) AS OrderAmount
+FROM Customers c 
+INNER JOIN Orders o ON c.CustomerID = o.CustomerID
+INNER JOIN OrderItems oi ON o.OrderID = oi.OrderID
+GROUP BY o.OrderID, o.OrderDate, c.CustomerID, c.FirstName, c.LastName;
+GO
+
+
+
+-- Query 31: Retrieve All Products with Category Names
+-- Using the vw_ProductDetails view to get a list of all Products along with their category names
+SELECT * FROM vw_ProductDetails;
+
+-- Query 32: Retrieve Product with a Specific Priced Range 
+--Using the vw_ProductDetails view to find products priced between $10 and $500
+SELECT * FROM vw_ProductDetails WHERE Price BETWEEN 10 AND 500;
+
+-- Query 33: Count the Number of products in each category
+-- Using vw_ProductDetails to Count the Number of products in each category
+SELECT CategoryName, COUNT(ProductID) AS ProductNumbers FROM vw_ProductDetails
+GROUP BY CategoryName
+ORDER BY ProductNumbers DESC;
+
+-- Query 34: Retrieve Customers With More than 5 Order
+-- Using vw_CustomerOrders Retrieve Customers With More than 5 Order
+SELECT * FROM vw_CustomerOrders WHERE TotalOrders > 1;
+
+-- Query 35: Retrieve the total Aomunt Spent By Each Customer
+-- Using vw_CustomerOrders Retrieve the total Aomunt Spent By Each Customer
+SELECT CustomerID, FirstName, LastName, TotalAmount FROM vw_CustomerOrders
+ORDER BY TotalAmount DESC;
+
+-- Query 36: 
+-- Query 37: 
