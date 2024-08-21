@@ -872,5 +872,27 @@ SELECT * FROM vw_CustomerOrders WHERE TotalOrders > 1;
 SELECT CustomerID, FirstName, LastName, TotalAmount FROM vw_CustomerOrders
 ORDER BY TotalAmount DESC;
 
--- Query 36: 
--- Query 37: 
+-- Query 36: Retrieve Recent orders Above a Certain Amount
+--Using vw_RecentOrders to Retrieve Recent orders Above a Certain Amount (e.g. $500 )
+SELECT * FROM vw_RecentOrders WHERE OrderAmount > 500
+ORDER BY OrderAmount DESC;
+
+-- Query 37: Retrieve the Latest order for each customers
+--Using vw_RecentOrders view to find the Latest order for each customers
+SELECT ro.OrderID, ro.OrderDate, ro.CustomerID, ro.FirstName, ro.LastName, ro.OrderAmount 
+FROM vw_RecentOrders ro 
+INNER JOIN (SELECT CustomerID, MAX(OrderDate) as LatestOrderDate FROM vw_RecentOrders GROUP BY CustomerID 
+) AS Latest
+ON ro.CustomerID = Latest.CustomerID AND ro.OrderDate = Latest.LatestOrderDate
+ORDER BY ro.OrderDate DESC;
+GO
+
+
+-- Query 38: Retrieve Products in a Specific Category
+--Using the vw_ProductDetails view to get all products in a specific Category, such as 'Electronics'.
+
+-- Query 39: Retrieve Total Sales For Each category
+
+-- Query 40: Retrieve Customers orders with product details
+-- Query 41: Retrieve  Top 5 Customers by total Spending
+-- Query 42: Rretrieve Products with Low Stock
