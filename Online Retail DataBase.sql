@@ -709,6 +709,7 @@ GO
 
 
 
+
 ---------------------------- 2. Indexes on Products Table -----------------------------------
 
 -- 1. Remove Foreign Constraint of that Table
@@ -889,10 +890,57 @@ GO
 
 
 -- Query 38: Retrieve Products in a Specific Category
---Using the vw_ProductDetails view to get all products in a specific Category, such as 'Electronics'.
+-- Using the vw_ProductDetails view to get all products in a specific Category, such as 'Electronics'.
+SELECT * FROM vw_ProductDetails WHERE CategoryName = 'Electronics';
+
 
 -- Query 39: Retrieve Total Sales For Each category
+-- Using the vw_productDetails and vw_CustomerOrders views to calculate the total sales for each category. 
+SELECT pd.CategoryName, SUM(oi.Quantity * oi.Price) AS TotalSales
+FROM  vw_ProductDetails pd
+INNER JOIN OrderItems oi ON pd.ProductID = oi.ProductID
+GROUP BY pd.CategoryName
+ORDER BY TotalSales DESC;
+
+
 
 -- Query 40: Retrieve Customers orders with product details
+-- Using the vw_CustomerOrders and vw_ProductDetails views to get customer orders along with the details of the products
+SELECT co.CustomerID, co.FirstName, co.LastName, o.OrderID, o.OrderDate, 
+pd.ProductName, oi.Quantity, oi.Price
+FROM Orders o
+INNER JOIN OrderItems oi ON o.OrderID = oi.OrderID
+INNER JOIN vw_ProductDetails pd ON oi.ProductID = pd.ProductID
+INNER JOIN vw_CustomerOrders co ON o.CustomerID = co.CustomerID
+ORDER BY OrderDate DESC;
+
+
 -- Query 41: Retrieve  Top 5 Customers by total Spending
+-- Using the vw_CustomerOrders to find top 5 customers based on their total spending.
+SELECT Top 5 CustomerID, FirstName, LastName, TotalAmount
+FROM vw_CustomerOrders ORDER BY TotalAmount DESC;
+
+
 -- Query 42: Rretrieve Products with Low Stock
+-- Using the vw_ProductDetails view to find products with stock below a certain threshold, such as 10 units.
+SELECT ProductName, Stock FROM Products Order by Stock ;
+
+SELECT ProductName, Stock FROM Products WHERE Stock < 50  ORDER BY Stock;
+
+
+-- Query 43: Retrieve Orders Placed in the last 7 day.
+-- Using vw_RecentOrders view to find Orders placed in last 7 days.
+SELECT * FROM vw_RecentOrders WHERE OrderDate >= DATEADD(DAY, -7, GETDATE())
+
+
+-- Query 44: Retrieve Products sold in last Month
+-- Using vw_RecentOrders view to find Products sold in last month.
+SELECT pd.ProductID, pd.ProductName, SUM(oi.Quantity) AS TotalSales
+FROM vw_RecentOrders ro
+INNER JOIN OrderItems oi ON ro.OrderID = oi.OrderID
+INNER JOIN vw_ProductDetails pd ON oi.ProductID = pd.ProductID
+WHERE ro.OrderDate >= DATEADD(MONTH, -1, GETDATE())
+GROUP BY pd.ProductID, pd.ProductName
+ORDER BY TotalSales DESC;
+
+
