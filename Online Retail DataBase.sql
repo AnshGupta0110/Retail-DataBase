@@ -944,3 +944,101 @@ GROUP BY pd.ProductID, pd.ProductName
 ORDER BY TotalSales DESC;
 
 
+
+
+
+/*
+=============================================================
+Implementing Security / Role-Based Access Control (RBAC)
+=============================================================
+
+Step 1: Create Logins
+Step 2: Create Users
+Step 3: Create Roles
+Step 4: Assign Users to Roles
+Step 5: Grant Permissions
+Step 5: Revok Permissions (If Needed)
+
+*/
+
+/*
+### Step 1: Create Logins
+----------------------
+*/
+--Create a login with SQL Server Authentication 
+CREATE LOGIN SalesUser WITH PASSWORD = 'strongpassword';
+
+
+/*
+### Step 2: Create Users
+----------------------
+            Create Users in the `OnlineRetailsDB` database for each login
+			User are associated with logins and used to grant access to the database
+*/
+USE OnlineRetailDB;
+GO 
+
+-- Create a User In the database for SQL Server Login
+CREATE USER SalesUser FOR LOGIN SalesUser;
+
+
+
+/*
+### Step 3: Create Roles
+----------------------
+            Define roles in the database that will be used to group users with similar permissions.
+			This helps simlify permisson management.
+*/
+-- Create Roles in the database
+CREATE ROLE SalesRole;
+CREATE ROLE MarketingRole;
+
+
+
+
+/*
+### Step 4: Assign Users to Roles
+---------------------------------
+            Add the users to the appropriate roles
+*/
+-- Add users to roles
+EXEC sp_addrolemember 'SalesRole' , 'SalesUser';
+
+
+
+
+/*
+### Step 5: Grant Permissions
+---------------------------------
+            Grant the necessary permissions to the roles, based on the access requirements.
+*/
+-- GRANT SELECT premissoin on the Customers Table to the SalesRole 
+GRANT SELECT ON Customers TO SalesRole;
+
+-- GRANT INSERT premissoin on the Orders Table to the SalesRole 
+GRANT INSERT ON Orders TO SalesRole;
+
+-- GRANT UPDATE premissoin on the Orders Table to the SalesRole 
+GRANT UPDATE ON Orders TO SalesRole;
+
+-- GRANT SELECT premissoin on the Products Table to the SalesRole 
+GRANT SELECT ON Products TO SalesRole;
+
+
+
+/*
+### Step 6: Revoke Permissions if needed
+----------------------------------------
+*/
+
+-- Revoke INSERT Permissions on the orders to the SalesRole
+REVOKE INSERT ON Orders FROM SalesRole;
+
+
+
+/*
+### Step 7: View Effective Permissions
+----------------------------------------
+                  You can view the effective permissions for a user using the query
+*/
+SELECT * FROM fn_my_permissions(NULL, 'DATABASE');
