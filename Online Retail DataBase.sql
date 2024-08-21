@@ -1042,3 +1042,59 @@ REVOKE INSERT ON Orders FROM SalesRole;
                   You can view the effective permissions for a user using the query
 */
 SELECT * FROM fn_my_permissions(NULL, 'DATABASE');
+
+
+
+-- Scenario 1: Read-Only Access to all Tables
+CREATE ROLE ReadOnlyRole;
+GRANT SELECT ON SCHEMA::dbo TO ReadOnlyRole;
+
+-- Scenario 2: Data Entry Clerk (Insert Only on Orders and OrderItems)
+CREATE ROLE DataEntryClerk;
+GRANT INSERT ON Orders TO DataEntryClerk;
+GRANT INSERT ON OrderItems TO DataEntryClerk;
+
+-- Scenario 3: Product Manager (Full Access to Products and Categories)
+CREATE ROLE ProductsManagerRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Products TO ProductsManagerRole;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Categories TO ProductsManagerRole;
+
+
+-- Scenario 4: Order Processor (Read and Update Orders)
+CREATE ROLE OrderProcessorRole;
+GRANT SELECT, UPDATE ON Orders TO OrderProcessorRole;
+
+-- Scenario 5: Customer support (Read Access to Customers and Orders)
+CREATE ROLE CustomerSupportRole;
+GRANT SELECT ON Customers TO CustomerSupportRole;
+GRANT SELECT ON Orders TO CustomerSupportRole;
+
+
+--IMP
+-- Scenario 6: Marketing Analyst (Read Access to All Tables, NO DML)
+CREATE ROLE MarketingAnalystRole;
+GRANT SELECT ON SCHEMA::dbo TO MarketingAnalystRole;
+
+
+-- Scenario 7: Sales Analyst (Read access to Orders and OrderItems)
+-- Scenario 8: Inventory Manager (Full Access to Products)
+-- Scenario 9: Finanace Manager (Read and Update Orders)
+
+-- Scenario 10: Database Backup Operator (Backup Database)
+CREATE ROLE BackupOperatorRole;
+GRANT BACKUP DATABASE TO BackupOperatorRole;
+-- Scenario 11: Database Developer (Full Update to Schema Objects)
+-- Scenario 12: Restricted Read Access (Read only spceific columns) 
+-- Scenario 13: Reporting User (Read Access to views only)
+-- Scenario 14: Temporary Access (Time-Bound Access)
+                -- Grant Access
+				-- Revoke Access after the specified period
+				
+				
+-- Scenario 15: External Auditor ( Read Access with no Data Changes)
+-- Scenario 16: Application Role (Access Based on Applicatopn)
+-- Scenario 17: Role-Based Access Control (RBAC) For Multiple Roles
+                -- Combine Roles
+-- Scenario 18: Sensitive Data Access (Columns Level Permissions)
+-- Scenario 19: Developer Role (Full Access to Devvelopment DataBase)
+-- Scenario 20: Security Administrator (Manage Security Privileges)
