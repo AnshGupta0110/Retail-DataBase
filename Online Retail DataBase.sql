@@ -718,7 +718,7 @@ GO
 -- 4. Recreate Foreign Contraint of that Table
 
 -- Drop Foregin Key Constraint from OrderItems Table (ProductID)
-ALTER TABLE OrderItems DROP CONSTRAINT FK__OrderItem__Produ__5629CD9C;
+ALTER TABLE OrderItems DROP CONSTRAINT FK__OrderItem__Produ__4316F928;
 
 -- Create Clustered Indexes
 CREATE CLUSTERED INDEX IDX_Products_ProductID
@@ -743,7 +743,7 @@ GO
 ---------------------------- 3. Indexes on Orders Table -----------------------------------
 
 -- Drop Foregin Key Constraint from OrderItems Table (OrderID)
-ALTER TABLE OrderItems DROP CONSTRAINT FK__OrderItem__Order__571DF1D5;
+ALTER TABLE OrderItems DROP CONSTRAINT FK__OrderItem__Order__440B1D61;
 
 -- Create Clustered Indexes
 CREATE CLUSTERED INDEX IDX_Orders_OrderID
@@ -784,7 +784,7 @@ GO
 ---------------------------- 4. Indexes on Customers Table -----------------------------------
 
 -- Drop Foregin Key Constraint from Orders Table (CustomerID)
-ALTER TABLE Orders DROP CONSTRAINT FK__Orders__Customer__534D60F1;
+ALTER TABLE Orders DROP CONSTRAINT FK__Orders__Customer__403A8C7D;
 
 -- Create Clustered Indexes
 CREATE CLUSTERED INDEX IDX_Customers_CustomerID
@@ -1098,3 +1098,42 @@ GRANT BACKUP DATABASE TO BackupOperatorRole;
 -- Scenario 18: Sensitive Data Access (Columns Level Permissions)
 -- Scenario 19: Developer Role (Full Access to Devvelopment DataBase)
 -- Scenario 20: Security Administrator (Manage Security Privileges)
+
+
+
+
+
+/*
+=====================================================================
+Backup & Restore
+=====================================================================
+*/
+
+BACKUP DATABASE [OnlineRetailDB] TO  
+DISK = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Backup\OnlineRetailDB.bak' WITH NOFORMAT, NOINIT,  NAME = N'OnlineRetailDB-Full Database Backup', SKIP, NOREWIND, NOUNLOAD,  STATS = 10
+GO
+declare @backupSetId as int
+select @backupSetId = position from msdb..backupset where 
+database_name=N'OnlineRetailDB' and backup_set_id=(select max(backup_set_id) 
+from msdb..backupset where database_name=N'OnlineRetailDB' )
+if @backupSetId is null 
+begin 
+raiserror(N'Verify failed. Backup information for database ''OnlineRetailDB'' not found.', 16, 1) end
+RESTORE VERIFYONLY 
+FROM  DISK = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Backup\OnlineRetailDB.bak' WITH  FILE = @backupSetId,  NOUNLOAD,  NOREWIND
+GO
+
+
+--------Tail Log BackUP
+USE [master]
+BACKUP LOG [OnlineRetailDB] TO  DISK = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Backup\OnlineRetailDB_LogBackup_2024-08-22_18-20-21.bak' WITH NOFORMAT, NOINIT,  NAME = N'OnlineRetailDB_LogBackup_2024-08-22_18-20-21', NOSKIP, NOREWIND, NOUNLOAD,  NORECOVERY ,  STATS = 5
+RESTORE DATABASE [OnlineRetailDB] FROM  DISK = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Backup\OnlineRetailDB.bak' WITH  FILE = 2,  NOUNLOAD,  STATS = 5
+
+GO
+
+
+/*
+===================================================
+Creating Automated Maintenance Plan
+===================================================
+*/
